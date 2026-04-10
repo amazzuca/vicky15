@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Camera, LogOut, Upload as UploadIcon, X } from 'lucide-react';
-import { collection, addDoc, query, orderBy, onSnapshot, serverTimestamp } from 'firebase/firestore';
+import { Camera, LogOut, Upload as UploadIcon, Trash2 } from 'lucide-react';
+import { collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, deleteDoc, doc } from 'firebase/firestore';
 import { db } from '../services/firebase';
+
+const ADMIN_EMAIL = 'alejandro.mazzuca@gmail.com';
 
 export default function PhotoWall({ user, onLogout }) {
   const [photos, setPhotos] = useState([]);
@@ -9,7 +11,8 @@ export default function PhotoWall({ user, onLogout }) {
   const [uploadProgress, setUploadProgress] = useState(0);
   const fileInputRef = useRef(null);
 
-  // Muro en tiempo real
+  const isAdmin = user?.email === ADMIN_EMAIL;
+
   useEffect(() => {
     const q = query(collection(db, "photos"), orderBy("createdAt", "desc"));
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
@@ -23,6 +26,17 @@ export default function PhotoWall({ user, onLogout }) {
     return () => unsubscribe();
   }, []);
 
+  const handleDeletePhoto = async (photoId) => {
+    if (window.confirm("¿Estás seguro que deseas eliminar esta foto permanentemente?")) {
+      try {
+        await deleteDoc(doc(db, "photos", photoId));
+      } catch (error) {
+        console.error("Error eliminando foto: ", error);
+        alert("Error al intentar eliminar la foto");
+      }
+    }
+  };
+
   const handleFileSelect = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -31,10 +45,9 @@ export default function PhotoWall({ user, onLogout }) {
     setUploadProgress(0);
 
     try {
-      // 1. Subir a Cloudinary (manteniendo la barra de progreso)
       const formData = new FormData();
       formData.append('file', file);
-      formData.append('upload_preset', 'xv_fotos'); // Tu upload preset
+      formData.append('upload_preset', 'xv_fotos'); 
 
       const xhr = new XMLHttpRequest();
       xhr.open('POST', 'https://api.cloudinary.com/v1_1/dx65keh25/image/upload');
@@ -51,7 +64,6 @@ export default function PhotoWall({ user, onLogout }) {
           const data = JSON.parse(xhr.responseText);
           const downloadURL = data.secure_url;
 
-          // 2. Guardar en Firestore la URL y datos del usuario
           await addDoc(collection(db, "photos"), {
             url: downloadURL,
             userId: user.uid,
@@ -85,21 +97,14 @@ export default function PhotoWall({ user, onLogout }) {
 
   return (
     <div style={{ paddingBottom: '100px' }}>
-      {/* Header */}
       <header className="glass-panel" style={{ 
-        position: 'sticky', 
-        top: 0, 
-        zIndex: 50, 
-        padding: '15px 20px',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: '20px',
-        borderRadius: '0 0 16px 16px',
-        borderTop: 'none'
+        position: 'sticky', top: 0, zIndex: 50, padding: '15px 20px',
+        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+        marginBottom: '20px', borderRadius: '0 0 16px 16px', borderTop: 'none'
       }}>
         <h2 className="text-gold text-glow" style={{ fontSize: '1.5rem', margin: 0 }}>Mis XV</h2>
         <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+          {isAdmin && <span style={{color: '#ff4d4d', fontSize: '0.8rem', fontWeight: 'bold'}}>Admin</span>}
           {user.photoURL && (
             <img src={user.photoURL} alt="Avatar" style={{ width: 30, height: 30, borderRadius: '50%' }} />
           )}
@@ -112,7 +117,6 @@ export default function PhotoWall({ user, onLogout }) {
         </div>
       </header>
 
-      {/* Progress Bar (si está subiendo) */}
       {isUploading && (
         <div className="container" style={{ marginBottom: '20px' }}>
           <div className="glass-panel" style={{ padding: '15px', textAlign: 'center' }}>
@@ -124,11 +128,8 @@ export default function PhotoWall({ user, onLogout }) {
         </div>
       )}
 
-      {/* Masonry Grid */}
       <div className="container" style={{
-        display: 'columns',
-        columnCount: window.innerWidth > 768 ? 3 : 2,
-        columnGap: '15px'
+        display: 'columns', columnCount: window.innerWidth > 768 ? 3 : 2, columnGap: '15px'
       }}>
         {photos.length === 0 && !isUploading && (
           <div style={{ columnSpan: 'all', textAlign: 'center', paddingTop: '50px', color: 'var(--text-secondary)' }}>
@@ -142,16 +143,28 @@ export default function PhotoWall({ user, onLogout }) {
             key={photo.id} 
             className="glass-panel animate-fade-in" 
             style={{ 
-              marginBottom: '15px', 
-              breakInside: 'avoid', 
-              overflow: 'hidden',
-              padding: '6px',
-              paddingBottom: '12px'
+              marginBottom: '15px', breakInside: 'avoid', overflow: 'hidden', padding: '6px', paddingBottom: '12px', position: 'relative'
             }}
           >
+            {/* Botón Administrador de borrado superpuesto */}
+            {isAdmin && (
+              <button 
+                onClick={() => handleDeletePhoto(photo.id)}
+                style={{
+                  position: 'absolute', top: '15px', right: '15px',
+                  background: 'rgba(220, 53, 69, 0.85)', color: 'white',
+                  border: 'none', borderRadius: '50%', width: '35px', height: '35px',
+                  display: 'flex', justifyContent: 'center', alignItems: 'center',
+                  cursor: 'pointer', zIndex: 10, backdropFilter: 'blur(4px)'
+                }}
+                title="Eliminar foto"
+              >
+                <Trash2 size={16} />
+              </button>
+            )}
+
             <img 
-              src={photo.url} 
-              alt="Party momento" 
+              src={photo.url} alt="Party momento" 
               style={{ width: '100%', display: 'block', borderRadius: '10px', marginBottom: '8px' }} 
               loading="lazy"
             />
@@ -165,23 +178,15 @@ export default function PhotoWall({ user, onLogout }) {
         ))}
       </div>
 
-      {/* Input de archivo invisible */}
       <input 
-        type="file" 
-        accept="image/*" 
-        capture="environment" // Sugiere abrir la cámara en celulares
-        ref={fileInputRef} 
-        style={{ display: 'none' }} 
+        type="file" accept="image/*" capture="environment" 
+        ref={fileInputRef} style={{ display: 'none' }} 
         onChange={handleFileSelect}
       />
 
-      {/* Upload FAB */}
       <button 
-        className="fab" 
-        onClick={() => fileInputRef.current?.click()} 
-        aria-label="Subir foto"
-        disabled={isUploading}
-        style={{ opacity: isUploading ? 0.5 : 1 }}
+        className="fab" onClick={() => fileInputRef.current?.click()} 
+        aria-label="Subir foto" disabled={isUploading} style={{ opacity: isUploading ? 0.5 : 1 }}
       >
         {isUploading ? <UploadIcon size={24} /> : <Camera size={28} />}
       </button>
