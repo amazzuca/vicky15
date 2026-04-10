@@ -1,15 +1,15 @@
 :root {
-  /* Paleta Elegante: Dark & Gold */
-  --bg-color: #0d0d0d;
-  --bg-gradient: radial-gradient(circle at 50% 0%, #1a1a1a 0%, #0d0d0d 70%);
-  --gold-primary: #d4af37;
-  --gold-light: #f3e5ab;
-  --gold-dark: #aa8529;
-  --text-primary: #ffffff;
-  --text-secondary: #a0a0a0;
-  --glass-bg: rgba(25, 25, 25, 0.6);
-  --glass-border: rgba(212, 175, 55, 0.2);
-  --shadow-gold: 0 4px 20px rgba(212, 175, 55, 0.15);
+  /* Paleta Elegante: White & Rose Gold */
+  --bg-color: #ffffff;
+  --bg-gradient: radial-gradient(circle at 50% 0%, #fffefe 0%, #faeef0 100%);
+  --gold-primary: #b76e79; /* Rose Gold elegante */
+  --gold-light: #d8a1a8; 
+  --gold-dark: #904f58;
+  --text-primary: #333333; /* Texto principal oscuro para fondo blanco */
+  --text-secondary: #666666;
+  --glass-bg: rgba(255, 255, 255, 0.85); /* Efecto cristalino claro */
+  --glass-border: rgba(183, 110, 121, 0.2);
+  --shadow-gold: 0 8px 32px rgba(183, 110, 121, 0.1);
   
   --font-heading: 'Cinzel', serif;
   --font-body: 'Montserrat', sans-serif;
@@ -41,14 +41,14 @@ a {
   text-decoration: none;
 }
 
-/* Utilidades para Glassmorphism */
+/* Utilidades para Glassmorphism (paneles transparentes) */
 .glass-panel {
   background: var(--glass-bg);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid var(--glass-border);
   border-radius: 16px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  box-shadow: var(--shadow-gold);
 }
 
 /* Efectos de texto */
@@ -57,13 +57,13 @@ a {
 }
 
 .text-glow {
-  text-shadow: 0 0 10px rgba(212, 175, 55, 0.5);
+  text-shadow: 0 2px 4px rgba(183, 110, 121, 0.2);
 }
 
 /* Botones Premium */
 .btn-gold {
   background: linear-gradient(135deg, var(--gold-primary), var(--gold-dark));
-  color: #000;
+  color: #ffffff; /* Letras blancas para contrastar con el rose gold */
   font-family: var(--font-body);
   font-weight: 600;
   border: none;
@@ -71,7 +71,7 @@ a {
   border-radius: 30px;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: var(--shadow-gold);
+  box-shadow: 0 4px 20px rgba(183, 110, 121, 0.25);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -80,7 +80,7 @@ a {
 
 .btn-gold:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 25px rgba(212, 175, 55, 0.3);
+  box-shadow: 0 6px 25px rgba(183, 110, 121, 0.4);
   background: linear-gradient(135deg, var(--gold-light), var(--gold-primary));
 }
 
@@ -88,7 +88,7 @@ a {
   transform: translateY(0);
 }
 
-/* Botón Flotante para Subir Fotos */
+/* Botón Flotante para Subir Fotos de la Cámara */
 .fab {
   position: fixed;
   bottom: 30px;
@@ -97,9 +97,9 @@ a {
   height: 60px;
   border-radius: 50%;
   background: linear-gradient(135deg, var(--gold-primary), var(--gold-dark));
-  color: #000;
+  color: #ffffff;
   border: none;
-  box-shadow: 0 4px 20px rgba(212, 175, 55, 0.4);
+  box-shadow: 0 4px 20px rgba(183, 110, 121, 0.4);
   cursor: pointer;
   display: flex;
   justify-content: center;
@@ -110,10 +110,10 @@ a {
 
 .fab:hover {
   transform: scale(1.1);
-  box-shadow: 0 6px 30px rgba(212, 175, 55, 0.6);
+  box-shadow: 0 6px 30px rgba(183, 110, 121, 0.6);
 }
 
-/* Animaciones simples */
+/* Animaciones visuales */
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(20px); }
   to { opacity: 1; transform: translateY(0); }
